@@ -1,0 +1,1568 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>مسار - تطبيق حجز مغاسل السيارات</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green: #00C853;
+    --green-light: #E8F5E9;
+    --green-dark: #00A846;
+    --blue: #1E88E5;
+    --orange: #FF6D00;
+    --red: #E53935;
+    --bg: #F5F7FA;
+    --white: #FFFFFF;
+    --text: #1A1A2E;
+    --text-muted: #6B7280;
+    --text-light: #9CA3AF;
+    --border: #E5E7EB;
+    --shadow: 0 2px 16px rgba(0,0,0,0.08);
+    --shadow-sm: 0 1px 6px rgba(0,0,0,0.06);
+    --radius: 16px;
+    --radius-sm: 10px;
+    --radius-xs: 8px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Tajawal', sans-serif;
+    background: #E8ECF0;
+    min-height: 100vh;
+    padding: 24px;
+    direction: rtl;
+  }
+
+  /* Screens container */
+  .screens-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    justify-content: center;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  .screen-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+  .screen-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: #555;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    direction: ltr;
+  }
+  .phone {
+    width: 375px;
+    min-height: 812px;
+    background: var(--bg);
+    border-radius: 40px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.18), 0 0 0 10px #1A1A2E, 0 0 0 12px #2A2A3E;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+  /* Status bar */
+  .status-bar {
+    background: transparent;
+    padding: 14px 20px 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    direction: ltr;
+    flex-shrink: 0;
+  }
+  .status-bar span { font-size: 12px; font-weight: 700; color: var(--text); }
+  .status-icons { display: flex; gap: 6px; align-items: center; }
+  .status-icons svg { width: 16px; height: 16px; }
+
+  /* Scrollable content */
+  .screen-content {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: none;
+  }
+  .screen-content::-webkit-scrollbar { display: none; }
+
+  /* ========== SPLASH ========== */
+  .splash {
+    background: linear-gradient(160deg, #00C853 0%, #00897B 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    min-height: 760px;
+    gap: 20px;
+    padding: 40px;
+  }
+  .splash-logo {
+    width: 110px; height: 110px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 3px solid rgba(255,255,255,0.3);
+    backdrop-filter: blur(10px);
+  }
+  .splash-logo svg { width: 64px; height: 64px; }
+  .splash h1 { font-size: 48px; font-weight: 900; color: white; letter-spacing: -1px; }
+  .splash p { font-size: 16px; color: rgba(255,255,255,0.85); text-align: center; font-weight: 400; line-height: 1.6; }
+  .splash-dots { display: flex; gap: 8px; margin-top: 20px; }
+  .splash-dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.4); }
+  .splash-dot.active { background: white; width: 24px; border-radius: 4px; }
+
+  /* ========== AUTH SCREENS ========== */
+  .auth-header {
+    padding: 20px 24px 0;
+    background: var(--white);
+    border-radius: 0 0 var(--radius) var(--radius);
+    margin: 0 0 20px;
+    padding-bottom: 24px;
+    box-shadow: var(--shadow-sm);
+  }
+  .auth-logo-small {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 24px;
+  }
+  .auth-logo-icon {
+    width: 40px; height: 40px; background: var(--green); border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .auth-logo-icon svg { width: 22px; height: 22px; }
+  .auth-logo-small span { font-size: 22px; font-weight: 900; color: var(--text); }
+  .auth-header h2 { font-size: 26px; font-weight: 800; color: var(--text); margin-bottom: 6px; }
+  .auth-header p { font-size: 14px; color: var(--text-muted); line-height: 1.5; }
+
+  .auth-body { padding: 0 24px 24px; }
+  .form-group { margin-bottom: 16px; }
+  .form-label { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 8px; display: block; }
+  .form-input {
+    width: 100%;
+    padding: 14px 16px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: 'Tajawal', sans-serif;
+    font-size: 14px;
+    color: var(--text);
+    background: var(--white);
+    outline: none;
+    transition: border-color 0.2s;
+    direction: rtl;
+  }
+  .form-input:focus { border-color: var(--green); }
+  .form-input.active-field { border-color: var(--green); box-shadow: 0 0 0 3px var(--green-light); }
+  .input-wrap { position: relative; }
+  .input-icon {
+    position: absolute;
+    left: 14px; top: 50%; transform: translateY(-50%);
+    color: var(--text-muted);
+  }
+  .input-icon svg { width: 18px; height: 18px; }
+
+  .btn-primary {
+    width: 100%;
+    padding: 15px;
+    background: var(--green);
+    color: white;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-family: 'Tajawal', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(0,200,83,0.35);
+    margin-top: 8px;
+  }
+  .btn-outline {
+    width: 100%;
+    padding: 14px;
+    background: transparent;
+    color: var(--green);
+    border: 1.5px solid var(--green);
+    border-radius: var(--radius-sm);
+    font-family: 'Tajawal', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 8px;
+  }
+  .text-link { text-align: center; font-size: 13px; color: var(--text-muted); margin-top: 12px; }
+  .text-link a { color: var(--green); font-weight: 700; }
+  .divider {
+    display: flex; align-items: center; gap: 12px; margin: 20px 0;
+    color: var(--text-light); font-size: 13px;
+  }
+  .divider::before, .divider::after {
+    content: ''; flex: 1; height: 1px; background: var(--border);
+  }
+  .forgot { text-align: center; font-size: 13px; color: var(--blue); font-weight: 600; margin-top: 12px; cursor: pointer; }
+
+  /* ========== EXPLORE ========== */
+  .explore-header {
+    background: linear-gradient(135deg, #00C853 0%, #00897B 100%);
+    padding: 16px 20px 24px;
+    direction: rtl;
+  }
+  .explore-header .top-row {
+    display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;
+  }
+  .location-chip {
+    display: flex; align-items: center; gap: 6px;
+    background: rgba(255,255,255,0.2);
+    color: white;
+    padding: 6px 12px; border-radius: 20px;
+    font-size: 13px; font-weight: 600;
+  }
+  .notif-btn {
+    width: 36px; height: 36px; background: rgba(255,255,255,0.2); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+  }
+  .notif-dot { width: 8px; height: 8px; background: #FF6B6B; border-radius: 50%; position: absolute; top: 4px; left: 4px; border: 1.5px solid white; }
+  .explore-header h2 { font-size: 22px; font-weight: 800; color: white; margin-bottom: 4px; }
+  .explore-header p { font-size: 13px; color: rgba(255,255,255,0.8); }
+  .search-bar {
+    margin-top: 16px;
+    background: white;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    padding: 10px 14px;
+    gap: 10px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+  }
+  .search-bar input {
+    flex: 1; border: none; outline: none; font-family: 'Tajawal', sans-serif;
+    font-size: 14px; color: var(--text-muted); direction: rtl; background: transparent;
+  }
+  .search-bar svg { width: 18px; height: 18px; color: var(--text-muted); flex-shrink: 0; }
+
+  .filter-chips { display: flex; gap: 8px; padding: 16px 20px 8px; overflow-x: auto; scrollbar-width: none; }
+  .filter-chips::-webkit-scrollbar { display: none; }
+  .chip {
+    padding: 8px 14px; border-radius: 20px; font-size: 13px; font-weight: 600;
+    white-space: nowrap; cursor: pointer; flex-shrink: 0;
+    border: 1.5px solid var(--border);
+    color: var(--text-muted); background: white;
+  }
+  .chip.active { background: var(--green); color: white; border-color: var(--green); box-shadow: 0 3px 10px rgba(0,200,83,0.3); }
+
+  .section-header { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px 12px; }
+  .section-title { font-size: 16px; font-weight: 800; color: var(--text); }
+  .section-link { font-size: 13px; color: var(--green); font-weight: 600; }
+
+  .wash-card {
+    background: white;
+    margin: 0 20px 12px;
+    border-radius: var(--radius);
+    padding: 16px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid rgba(0,0,0,0.04);
+    cursor: pointer;
+    transition: transform 0.15s;
+  }
+  .wash-card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+  .wash-card-info { flex: 1; }
+  .wash-card-name { font-size: 15px; font-weight: 800; color: var(--text); margin-bottom: 3px; }
+  .wash-card-location { font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 4px; }
+  .wash-card-location svg { width: 12px; height: 12px; }
+  .wash-meta { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+  .meta-tag {
+    display: flex; align-items: center; gap: 4px;
+    background: var(--bg); padding: 4px 10px; border-radius: 20px;
+    font-size: 12px; font-weight: 600; color: var(--text-muted);
+  }
+  .meta-tag svg { width: 12px; height: 12px; }
+  .wash-card-footer { display: flex; justify-content: space-between; align-items: center; }
+  .queue-badge {
+    display: flex; align-items: center; gap: 6px;
+    padding: 6px 12px; border-radius: 20px;
+    font-size: 13px; font-weight: 700;
+  }
+  .queue-badge.green { background: var(--green-light); color: #00A846; }
+  .queue-badge.orange { background: #FFF3E0; color: #E65100; }
+  .queue-badge.red { background: #FFEBEE; color: #C62828; }
+  .queue-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .queue-badge.green .queue-dot { background: var(--green); }
+  .queue-badge.orange .queue-dot { background: var(--orange); }
+  .queue-badge.red .queue-dot { background: var(--red); }
+  .wait-time { font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 4px; }
+  .wait-time svg { width: 13px; height: 13px; }
+  .arrow-btn {
+    width: 32px; height: 32px; background: var(--green-light); border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .arrow-btn svg { width: 16px; height: 16px; color: var(--green); }
+  .stars { color: #F59E0B; font-size: 12px; }
+  .rating-row { display: flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 600; color: var(--text); }
+
+  .closed-badge {
+    background: #FFEBEE; color: var(--red); font-size: 11px; font-weight: 700;
+    padding: 3px 10px; border-radius: 20px;
+  }
+
+  /* Bottom Nav */
+  .bottom-nav {
+    background: white;
+    display: flex;
+    border-top: 1px solid var(--border);
+    padding: 10px 0 20px;
+    flex-shrink: 0;
+  }
+  .nav-item {
+    flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;
+    font-size: 11px; font-weight: 600; color: var(--text-muted); cursor: pointer;
+    padding: 4px 0;
+  }
+  .nav-item.active { color: var(--green); }
+  .nav-item svg { width: 22px; height: 22px; }
+  .nav-dot { width: 5px; height: 5px; background: var(--green); border-radius: 50%; }
+
+  /* ========== DETAILS ========== */
+  .detail-image {
+    height: 200px; position: relative; overflow: hidden;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  }
+  .detail-image-inner {
+    width: 100%; height: 100%;
+    background: linear-gradient(135deg, #00C853 0%, #00897B 60%, #005F52 100%);
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+  }
+  .detail-image-inner::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,0.03) 10px, rgba(255,255,255,0.03) 20px);
+  }
+  .detail-image-inner svg { width: 80px; height: 80px; opacity: 0.3; }
+  .back-btn {
+    position: absolute; top: 16px; right: 16px; z-index: 10;
+    width: 36px; height: 36px; background: rgba(0,0,0,0.3); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    backdrop-filter: blur(8px);
+  }
+  .back-btn svg { width: 18px; height: 18px; color: white; }
+  .fav-btn {
+    position: absolute; top: 16px; left: 16px; z-index: 10;
+    width: 36px; height: 36px; background: rgba(0,0,0,0.3); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .fav-btn svg { width: 18px; height: 18px; color: white; }
+
+  .detail-body { padding: 20px; }
+  .detail-name { font-size: 22px; font-weight: 900; color: var(--text); margin-bottom: 6px; }
+  .detail-meta { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+  .detail-meta-item { display: flex; align-items: center; gap: 4px; font-size: 13px; color: var(--text-muted); }
+  .detail-meta-item svg { width: 14px; height: 14px; }
+  .detail-meta-item.rating { color: #F59E0B; font-weight: 700; }
+
+  .services-row { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+  .service-chip { background: var(--bg); padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; color: var(--text-muted); }
+
+  .queue-status-card {
+    background: white; border-radius: var(--radius); padding: 18px;
+    box-shadow: var(--shadow-sm); border: 1px solid var(--border);
+    margin-bottom: 16px;
+  }
+  .qsc-title { font-size: 14px; font-weight: 700; color: var(--text-muted); margin-bottom: 14px; }
+  .qsc-stats { display: flex; gap: 12px; margin-bottom: 14px; }
+  .qsc-stat {
+    flex: 1; background: var(--bg); border-radius: 12px; padding: 14px;
+    text-align: center;
+  }
+  .qsc-stat-num { font-size: 28px; font-weight: 900; color: var(--text); }
+  .qsc-stat-label { font-size: 11px; color: var(--text-muted); font-weight: 500; margin-top: 2px; }
+  .crowd-level { display: flex; justify-content: space-between; align-items: center; }
+  .crowd-label { font-size: 13px; font-weight: 600; color: var(--text-muted); }
+  .crowd-pills { display: flex; gap: 6px; }
+  .crowd-pill {
+    padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700;
+    background: var(--bg); color: var(--text-muted);
+  }
+  .crowd-pill.active.low { background: var(--green-light); color: var(--green); }
+  .crowd-pill.active.med { background: #FFF3E0; color: #E65100; }
+  .crowd-pill.active.high { background: #FFEBEE; color: var(--red); }
+
+  .book-btn {
+    width: 100%;
+    padding: 17px;
+    background: var(--green);
+    color: white; border: none;
+    border-radius: var(--radius-sm);
+    font-family: 'Tajawal', sans-serif;
+    font-size: 18px; font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 6px 20px rgba(0,200,83,0.4);
+    margin-bottom: 16px;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .book-btn svg { width: 20px; height: 20px; }
+
+  .loyalty-card {
+    background: linear-gradient(135deg, #1E88E5 0%, #1565C0 100%);
+    border-radius: var(--radius); padding: 18px;
+    color: white; margin-bottom: 20px;
+  }
+  .loyalty-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .loyalty-points { font-size: 28px; font-weight: 900; }
+  .loyalty-label { font-size: 13px; opacity: 0.85; }
+  .loyalty-progress { background: rgba(255,255,255,0.2); border-radius: 8px; height: 8px; margin-bottom: 8px; overflow: hidden; }
+  .loyalty-fill { background: white; height: 100%; border-radius: 8px; width: 60%; }
+  .loyalty-hint { font-size: 11px; opacity: 0.75; }
+
+  /* ========== SEARCH SCREEN ========== */
+  .search-screen-header { padding: 16px 20px; background: white; border-bottom: 1px solid var(--border); }
+  .search-bar-wrap { display: flex; gap: 10px; align-items: center; }
+  .search-input-full {
+    flex: 1; display: flex; align-items: center; gap: 8px;
+    background: var(--bg); padding: 11px 14px; border-radius: var(--radius-sm);
+    border: 1.5px solid var(--border);
+  }
+  .search-input-full input { flex: 1; border: none; background: transparent; outline: none; font-family: 'Tajawal', sans-serif; font-size: 13px; color: var(--text-muted); direction: rtl; }
+  .search-input-full svg { width: 16px; height: 16px; color: var(--text-light); flex-shrink: 0; }
+  .filter-icon-btn {
+    width: 46px; height: 46px; background: var(--green); border-radius: var(--radius-sm);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    box-shadow: 0 3px 10px rgba(0,200,83,0.3);
+  }
+  .filter-icon-btn svg { width: 20px; height: 20px; color: white; }
+  .filter-section { padding: 16px 20px 8px; }
+  .filter-section-label { font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 8px; letter-spacing: 0.5px; }
+  .filter-chips-wrap { display: flex; flex-wrap: wrap; gap: 8px; }
+  .filter-chip {
+    padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600;
+    border: 1.5px solid var(--border); color: var(--text-muted); background: white; cursor: pointer;
+  }
+  .filter-chip.active { background: var(--green-light); color: var(--green); border-color: var(--green); }
+  .results-section { padding: 8px 20px 16px; }
+  .results-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .results-count { font-size: 13px; color: var(--text-muted); }
+  .clear-all { font-size: 13px; color: var(--red); font-weight: 700; }
+  .result-card {
+    background: white; border-radius: var(--radius-sm); padding: 14px;
+    margin-bottom: 10px; box-shadow: var(--shadow-sm); border: 1px solid rgba(0,0,0,0.04);
+    display: flex; align-items: center; gap: 12px;
+  }
+  .result-icon {
+    width: 44px; height: 44px; background: var(--green-light); border-radius: 12px;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .result-icon svg { width: 22px; height: 22px; color: var(--green); }
+  .result-info { flex: 1; }
+  .result-name { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+  .result-sub { font-size: 12px; color: var(--text-muted); display: flex; gap: 10px; }
+  .result-wait { font-size: 13px; font-weight: 700; color: var(--orange); }
+
+  /* ========== TICKET ========== */
+  .ticket-bg {
+    background: linear-gradient(160deg, #00C853 0%, #00897B 40%, var(--bg) 40%);
+    min-height: 100%;
+    padding: 0;
+  }
+  .ticket-header { padding: 16px 20px; }
+  .ticket-header h3 { font-size: 20px; font-weight: 800; color: white; }
+  .ticket-header p { font-size: 13px; color: rgba(255,255,255,0.8); }
+  .ticket-card {
+    background: white; margin: 0 20px; border-radius: var(--radius);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.15); overflow: hidden;
+    position: relative;
+  }
+  .ticket-notch { display: flex; margin: 0; }
+  .ticket-notch-left, .ticket-notch-right {
+    width: 18px; height: 18px; background: var(--bg); border-radius: 50%; flex-shrink: 0;
+  }
+  .ticket-notch-line { flex: 1; border-bottom: 2px dashed var(--border); margin: 9px 0; }
+  .ticket-top { padding: 20px; background: white; }
+  .ticket-name { font-size: 18px; font-weight: 800; color: var(--text); margin-bottom: 4px; }
+  .ticket-sub { font-size: 13px; color: var(--text-muted); margin-bottom: 16px; }
+  .ticket-number-wrap { text-align: center; margin-bottom: 16px; }
+  .ticket-num-label { font-size: 12px; color: var(--text-muted); font-weight: 600; margin-bottom: 4px; }
+  .ticket-number { font-size: 72px; font-weight: 900; color: var(--green); line-height: 1; }
+  .ticket-status {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--green-light); color: var(--green);
+    padding: 8px 20px; border-radius: 20px; font-size: 14px; font-weight: 700;
+    margin-bottom: 16px;
+  }
+  .pulse-dot { width: 8px; height: 8px; background: var(--green); border-radius: 50%; animation: pulse 1.5s infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.6; transform: scale(1.3); } }
+  .countdown { background: var(--bg); border-radius: 12px; padding: 14px; text-align: center; margin-bottom: 0; }
+  .countdown-label { font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
+  .countdown-time { font-size: 28px; font-weight: 900; color: var(--text); }
+  .qr-section { padding: 20px; text-align: center; }
+  .qr-label { font-size: 12px; color: var(--text-muted); margin-bottom: 12px; font-weight: 600; }
+  .qr-code {
+    width: 140px; height: 140px; background: white; margin: 0 auto 12px;
+    border: 2px solid var(--border); border-radius: 12px; padding: 8px;
+    display: grid; grid-template-columns: repeat(7,1fr); gap: 2px;
+  }
+  .qr-cell { border-radius: 2px; }
+  .q1 { background: #1A1A2E; }
+  .q0 { background: transparent; }
+  .ticket-id { font-size: 12px; color: var(--text-muted); font-family: monospace; }
+  .ticket-actions { padding: 16px 20px 20px; }
+  .btn-map {
+    width: 100%; padding: 15px; background: var(--green); color: white; border: none;
+    border-radius: var(--radius-sm); font-family: 'Tajawal', sans-serif;
+    font-size: 15px; font-weight: 700; cursor: pointer;
+    box-shadow: 0 4px 14px rgba(0,200,83,0.35); margin-bottom: 12px;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .btn-map svg { width: 18px; height: 18px; }
+  .btn-cancel { text-align: center; font-size: 14px; color: var(--red); font-weight: 700; padding: 8px; cursor: pointer; }
+
+  /* ========== NOTIFICATIONS ========== */
+  .notif-header { padding: 20px; }
+  .notif-header h2 { font-size: 24px; font-weight: 900; color: var(--text); margin-bottom: 4px; }
+  .notif-header p { font-size: 13px; color: var(--text-muted); }
+  .notif-group { padding: 0 20px; margin-bottom: 8px; }
+  .notif-group-label {
+    font-size: 12px; font-weight: 700; color: var(--text-muted);
+    letter-spacing: 0.5px; margin-bottom: 10px; padding: 8px 0 0;
+    text-transform: uppercase;
+  }
+  .notif-item {
+    background: white; border-radius: var(--radius-sm); padding: 14px;
+    margin-bottom: 8px; box-shadow: var(--shadow-sm); border: 1px solid rgba(0,0,0,0.04);
+    display: flex; gap: 12px; align-items: flex-start;
+  }
+  .notif-item.unread { border-right: 3px solid var(--green); }
+  .notif-icon {
+    width: 40px; height: 40px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .notif-icon.green { background: var(--green-light); }
+  .notif-icon.blue { background: #E3F2FD; }
+  .notif-icon.green-light { background: #F0FFF4; }
+  .notif-icon svg { width: 20px; height: 20px; }
+  .notif-icon.green svg { color: var(--green); }
+  .notif-icon.blue svg { color: var(--blue); }
+  .notif-icon.green-light svg { color: #00C853; opacity: 0.7; }
+  .notif-content { flex: 1; }
+  .notif-title { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 4px; line-height: 1.4; }
+  .notif-time { font-size: 11px; color: var(--text-light); }
+
+  /* ========== HISTORY ========== */
+  .history-header { padding: 20px 20px 12px; }
+  .history-header h2 { font-size: 24px; font-weight: 900; color: var(--text); margin-bottom: 4px; }
+  .history-tabs { display: flex; background: var(--bg); border-radius: 12px; padding: 3px; margin: 0 20px 16px; }
+  .history-tab {
+    flex: 1; text-align: center; padding: 8px; border-radius: 10px;
+    font-size: 13px; font-weight: 600; color: var(--text-muted); cursor: pointer;
+  }
+  .history-tab.active { background: white; color: var(--text); box-shadow: var(--shadow-sm); }
+  .history-cards { padding: 0 20px; }
+  .history-card {
+    background: white; border-radius: var(--radius); padding: 16px;
+    margin-bottom: 12px; box-shadow: var(--shadow-sm); border: 1px solid rgba(0,0,0,0.04);
+  }
+  .hc-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+  .hc-left { flex: 1; }
+  .hc-name { font-size: 15px; font-weight: 800; color: var(--text); margin-bottom: 3px; }
+  .hc-date { font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 4px; }
+  .hc-date svg { width: 12px; height: 12px; }
+  .hc-status {
+    padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700;
+  }
+  .hc-status.done { background: var(--green-light); color: var(--green); }
+  .hc-status.cancelled { background: #FFEBEE; color: var(--red); }
+  .hc-bottom { display: flex; justify-content: space-between; align-items: center; }
+  .hc-service { font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
+  .hc-points { font-size: 13px; font-weight: 700; color: var(--green); background: var(--green-light); padding: 4px 10px; border-radius: 20px; }
+
+  /* ========== PROFILE ========== */
+  .profile-top {
+    background: linear-gradient(135deg, #1E88E5 0%, #1565C0 100%);
+    padding: 24px 20px 32px; text-align: center;
+  }
+  .profile-avatar {
+    width: 80px; height: 80px; border-radius: 50%; background: white;
+    margin: 0 auto 12px; display: flex; align-items: center; justify-content: center;
+    border: 3px solid rgba(255,255,255,0.4);
+    overflow: hidden;
+    font-size: 32px;
+  }
+  .profile-name { font-size: 22px; font-weight: 800; color: white; margin-bottom: 4px; }
+  .profile-car { font-size: 13px; color: rgba(255,255,255,0.8); display: flex; align-items: center; justify-content: center; gap: 6px; }
+  .profile-car svg { width: 14px; height: 14px; }
+  .profile-stats { display: flex; gap: 12px; padding: 0 20px; margin-top: -20px; margin-bottom: 20px; }
+  .stat-card {
+    flex: 1; background: white; border-radius: var(--radius); padding: 16px;
+    box-shadow: var(--shadow); text-align: center;
+  }
+  .stat-icon { font-size: 24px; margin-bottom: 6px; }
+  .stat-num { font-size: 20px; font-weight: 900; color: var(--text); }
+  .stat-label { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+  .profile-section { padding: 0 20px 12px; }
+  .profile-section-title { font-size: 12px; font-weight: 700; color: var(--text-muted); letter-spacing: 0.5px; margin-bottom: 10px; text-transform: uppercase; }
+  .profile-item {
+    background: white; border-radius: var(--radius-sm); padding: 15px 16px;
+    margin-bottom: 8px; box-shadow: var(--shadow-sm); border: 1px solid rgba(0,0,0,0.04);
+    display: flex; align-items: center; gap: 12px; cursor: pointer;
+  }
+  .profile-item-icon {
+    width: 38px; height: 38px; border-radius: 10px; background: var(--bg);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .profile-item-icon svg { width: 18px; height: 18px; color: var(--text-muted); }
+  .profile-item-label { flex: 1; font-size: 14px; font-weight: 600; color: var(--text); }
+  .profile-item-arrow svg { width: 16px; height: 16px; color: var(--text-light); }
+  .logout-btn {
+    margin: 8px 20px 20px; padding: 14px;
+    background: #FFEBEE; color: var(--red); border: none;
+    border-radius: var(--radius-sm); font-family: 'Tajawal', sans-serif;
+    font-size: 15px; font-weight: 700; cursor: pointer; width: calc(100% - 40px);
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .logout-btn svg { width: 18px; height: 18px; }
+
+  /* Page heading */
+  .page-heading {
+    background: white; padding: 12px 20px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 12px;
+  }
+  .page-heading h3 { font-size: 18px; font-weight: 800; color: var(--text); }
+  .back-icon { width: 32px; height: 32px; background: var(--bg); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+  .back-icon svg { width: 16px; height: 16px; color: var(--text); }
+
+  /* Highlight title */
+  .app-title {
+    text-align: center; margin: 0 auto 24px; font-size: 28px; font-weight: 900;
+    color: var(--text);
+    direction: rtl;
+  }
+  .app-title span { color: var(--green); }
+</style>
+</head>
+<body>
+
+<p class="app-title"><span>مسار</span> — نموذج تطبيق حجز مغاسل السيارات</p>
+
+<div class="screens-grid">
+
+  <!-- ====== SCREEN 1: SPLASH ====== -->
+  <div class="screen-wrapper">
+    <div class="screen-label">1 · Splash</div>
+    <div class="phone">
+      <div class="screen-content">
+        <div class="splash">
+          <div class="splash-logo">
+            <svg viewBox="0 0 64 64" fill="none">
+              <!-- Speedometer circle -->
+              <circle cx="32" cy="32" r="28" stroke="white" stroke-width="2.5" stroke-dasharray="8 4"/>
+              <!-- Road path -->
+              <path d="M22 52 L28 20 L36 20 L42 52" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+              <path d="M27 36 L37 36" stroke="white" stroke-width="2" stroke-linecap="round"/>
+              <path d="M25 44 L39 44" stroke="white" stroke-width="2" stroke-linecap="round"/>
+              <!-- Needle -->
+              <line x1="32" y1="32" x2="48" y2="20" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+              <circle cx="32" cy="32" r="3" fill="white"/>
+              <!-- Speed marks -->
+              <line x1="16" y1="32" x2="20" y2="32" stroke="rgba(255,255,255,0.6)" stroke-width="1.5"/>
+              <line x1="48" y1="32" x2="44" y2="32" stroke="rgba(255,255,255,0.6)" stroke-width="1.5"/>
+            </svg>
+          </div>
+          <h1>مسار</h1>
+          <p>احجز دور مغسلتك<br>بدون انتظار</p>
+          <div class="splash-dots">
+            <div class="splash-dot"></div>
+            <div class="splash-dot active"></div>
+            <div class="splash-dot"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== SCREEN 2: LOGIN ====== -->
+  <div class="screen-wrapper">
+    <div class="screen-label">2 · Login</div>
+    <div class="phone">
+      <div class="status-bar">
+        <span>9:41</span>
+        <div class="status-icons">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3a4.237 4.237 0 00-6 0zm-4-4l2 2a7.074 7.074 0 0110 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg>
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4z"/></svg>
+        </div>
+      </div>
+      <div class="screen-content">
+        <div style="height: 30px;"></div>
+        <div class="auth-header">
+          <div class="auth-logo-small">
+            <div class="auth-logo-icon">
+              <svg viewBox="0 0 24 24" fill="white"><path d="M13 2.05V4.07c3.94.49 7 3.85 7 7.93s-3.02 7.44-7 7.93v2.02c5.05-.51 9-4.76 9-9.95S18.05 2.56 13 2.05zm-2 0c-5.05.51-9 4.75-9 9.95S5.95 21.44 11 21.95V19.93C7.06 19.44 4 16.08 4 12s3.06-7.44 7-7.93V2.05z"/></svg>
+            </div>
+            <span>مسار</span>
+          </div>
+          <h2>تسجيل الدخول</h2>
+          <p>ادخل بياناتك للوصول إلى حسابك</p>
+        </div>
+        <div class="auth-body">
+          <div class="form-group">
+            <label class="form-label">البريد الإلكتروني أو رقم الجوال</label>
+            <div class="input-wrap">
+              <input class="form-input active-field" type="text" placeholder="example@email.com" value="sarah@example.com">
+              <span class="input-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,12 2,6"/></svg></span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">كلمة المرور</label>
+            <div class="input-wrap">
+              <input class="form-input" type="password" value="••••••••">
+              <span class="input-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></span>
+            </div>
+          </div>
+          <div class="forgot">نسيت كلمة المرور؟</div>
+          <button class="btn-primary">دخول</button>
+          <div class="divider">أو</div>
+          <button class="btn-outline">إنشاء حساب جديد</button>
+          <div class="text-link" style="margin-top:20px; font-size:12px; color:#9CA3AF;">بالمتابعة، أنت توافق على <a>شروط الاستخدام</a></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== SCREEN 3: SIGN UP ====== -->
+  <div class="screen-wrapper">
+    <div class="screen-label">3 · Sign Up</div>
+    <div class="phone">
+      <div class="status-bar">
+        <span>9:41</span>
+        <div class="status-icons">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3a4.237 4.237 0 00-6 0zm-4-4l2 2a7.074 7.074 0 0110 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg>
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4z"/></svg>
+        </div>
+      </div>
+      <div class="screen-content">
+        <div style="height:20px;"></div>
+        <div class="auth-header">
+          <div class="auth-logo-small">
+            <div class="auth-logo-icon">
+              <svg viewBox="0 0 24 24" fill="white"><path d="M13 2.05V4.07c3.94.49 7 3.85 7 7.93s-3.02 7.44-7 7.93v2.02c5.05-.51 9-4.76 9-9.95S18.05 2.56 13 2.05zm-2 0c-5.05.51-9 4.75-9 9.95S5.95 21.44 11 21.95V19.93C7.06 19.44 4 16.08 4 12s3.06-7.44 7-7.93V2.05z"/></svg>
+            </div>
+            <span>مسار</span>
+          </div>
+          <h2>إنشاء حساب جديد</h2>
+          <p>سجّل بياناتك للبدء في الاستخدام</p>
+        </div>
+        <div class="auth-body">
+          <div class="form-group">
+            <label class="form-label">الاسم الكامل</label>
+            <input class="form-input active-field" type="text" value="سارة أحمد">
+          </div>
+          <div class="form-group">
+            <label class="form-label">البريد الإلكتروني</label>
+            <input class="form-input" type="email" placeholder="example@email.com">
+          </div>
+          <div class="form-group">
+            <label class="form-label">رقم الجوال</label>
+            <input class="form-input" type="tel" placeholder="05XXXXXXXX">
+          </div>
+          <div class="form-group">
+            <label class="form-label">نوع المركبة</label>
+            <select class="form-input" style="appearance:none; cursor:pointer;">
+              <option>🚗 سيارة</option>
+              <option>🏍 دباب</option>
+              <option>🚐 فان</option>
+              <option>🚛 شاحنة</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">كلمة المرور</label>
+            <input class="form-input" type="password" placeholder="8 أحرف على الأقل">
+          </div>
+          <button class="btn-primary" style="margin-top:16px;">إنشاء الحساب</button>
+          <div class="text-link" style="margin-top:14px;">لديك حساب بالفعل؟ <a>تسجيل الدخول</a></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== SCREEN 4: EXPLORE ====== -->
+  <div class="screen-wrapper">
+    <div class="screen-label">4 · Explore</div>
+    <div class="phone">
+      <div class="status-bar" style="position:absolute;top:0;right:0;left:0;z-index:10;">
+        <span style="color:white">9:41</span>
+        <div class="status-icons" style="filter:brightness(10)">
+          <svg viewBox="0 0 24 24" fill="currentColor" style="width:16px;height:16px;"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3a4.237 4.237 0 00-6 0zm-4-4l2 2a7.074 7.074 0 0110 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg>
+          <svg viewBox="0 0 24 24" fill="currentColor" style="width:16px;height:16px;"><path d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4z"/></svg>
+        </div>
+      </div>
+      <div class="screen-content">
+        <div class="explore-header">
+          <div style="height:36px;"></div>
+          <div class="top-row">
+            <div class="location-chip">
+              <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+              الرياض
+              <svg viewBox="0 0 24 24" fill="currentColor" width="12" height="12"><path d="M7 10l5 5 5-5z"/></svg>
+            </div>
+            <div class="notif-btn">
+              <svg viewBox="0 0 24 24" fill="white" width="18" height="18"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
+              <div class="notif-dot"></div>
+            </div>
+          </div>
+          <h2>اكتشف المغاسل القريبة</h2>
+          <p>احجز دورك لمركبتك بسهولة</p>
+          <div class="search-bar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input placeholder="ابحث عن مغسلة...">
+          </div>
+        </div>
+
+        <!-- Filter chips -->
+        <div class="filter-chips">
+          <div class="chip active">🚗 سيارة</div>
+          <div class="chip">🏍 دباب</div>
+          <div class="chip">🚐 فان</div>
+          <div class="chip">🚛 شاحنة</div>
+        </div>
+
+        <!-- Nearby -->
+        <div class="section-header">
+          <span class="section-title">المغاسل القريبة</span>
+          <span class="section-link">عرض الكل</span>
+        </div>
+
+        <!-- Card 1 - green queue -->
+        <div class="wash-card">
+          <div class="wash-card-top">
+            <div class="wash-card-info">
+              <div class="wash-card-name">مغسلة النخبة</div>
+              <div class="wash-card-location">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg>
+                حي العليا، الرياض
+              </div>
+            </div>
+            <div class="rating-row">
+              <span class="stars">★</span>
+              <span>4.8</span>
+            </div>
+          </div>
+          <div class="wash-meta">
+            <div class="meta-tag">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+              1.2 كم
+            </div>
+            <div class="meta-tag">💧 بخار + تلميع</div>
+          </div>
+          <div class="wash-card-footer">
+            <div style="display:flex; flex-direction:column; gap:4px;">
+              <div class="queue-badge green">
+                <div class="queue-dot"></div>
+                2 في الانتظار
+              </div>
+              <div class="wait-time">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                8 دقائق
+              </div>
+            </div>
+            <div class="arrow-btn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 2 - orange queue -->
+        <div class="wash-card">
+          <div class="wash-card-top">
+            <div class="wash-card-info">
+              <div class="wash-card-name">مغسلة الفارس</div>
+              <div class="wash-card-location">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg>
+                حي الملقا، الرياض
+              </div>
+            </div>
+            <div class="rating-row">
+              <span class="stars">★</span>
+              <span>4.5</span>
+            </div>
+          </div>
+          <div class="wash-meta">
+            <div class="meta-tag">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+              2.7 كم
+            </div>
+            <div class="meta-tag">✨ نانو + بخار</div>
+          </div>
+          <div class="wash-card-footer">
+            <div style="display:flex; flex-direction:column; gap:4px;">
+              <div class="queue-badge orange">
+                <div class="queue-dot"></div>
+                4 في الانتظار
+              </div>
+              <div class="wait-time">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                18 دقيقة
+              </div>
+            </div>
+            <div class="arrow-btn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 3 - red queue -->
+        <div class="wash-card">
+          <div class="wash-card-top">
+            <div class="wash-card-info">
+              <div class="wash-card-name">مغسلة الأمير</div>
+              <div class="wash-card-location">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg>
+                حي الورود، الرياض
+              </div>
+            </div>
+            <div class="rating-row">
+              <span class="stars">★</span>
+              <span>4.9</span>
+            </div>
+          </div>
+          <div class="wash-meta">
+            <div class="meta-tag">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+              3.4 كم
+            </div>
+            <div class="meta-tag">🌟 تلميع ساطع</div>
+          </div>
+          <div class="wash-card-footer">
+            <div style="display:flex; flex-direction:column; gap:4px;">
+              <div class="queue-badge red">
+                <div class="queue-dot"></div>
+                7 في الانتظار
+              </div>
+              <div class="wait-time">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                32 دقيقة
+              </div>
+            </div>
+            <div class="arrow-btn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Closed -->
+        <div class="section-header">
+          <span class="section-title">مغلقة حالياً</span>
+        </div>
+        <div class="wash-card" style="opacity:0.7;">
+          <div class="wash-card-top">
+            <div class="wash-card-info">
+              <div class="wash-card-name">مغسلة المروج</div>
+              <div class="wash-card-location">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg>
+                حي النزهة، الرياض
+              </div>
+            </div>
+            <div class="closed-badge">مغلقة</div>
+          </div>
+          <div class="wash-meta">
+            <div class="meta-tag">4.1 كم</div>
+            <div class="meta-tag" style="color:#9CA3AF;">تفتح 8:00 ص</div>
+          </div>
+        </div>
+        <div style="height:16px;"></div>
+      </div>
+      <!-- Bottom Nav -->
+      <div class="bottom-nav">
+        <div class="nav-item active">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          استكشاف
+          <div class="nav-dot"></div>
+        </div>
+        <div class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          الطابور
+        </div>
+        <div class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          النقاط
+        </div>
+        <div class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          حسابي
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== SCREEN 5: DETAILS ====== -->
+  <div class="screen-wrapper">
+    <div class="screen-label">5 · Details</div>
+    <div class="phone">
+      <div class="screen-content">
+        <div class="detail-image">
+          <div class="detail-image-inner">
+            <svg viewBox="0 0 100 60" fill="none">
+              <rect x="10" y="25" width="80" height="25" rx="8" fill="rgba(255,255,255,0.15)"/>
+              <circle cx="25" cy="50" r="8" fill="rgba(255,255,255,0.2)"/>
+              <circle cx="75" cy="50" r="8" fill="rgba(255,255,255,0.2)"/>
+              <path d="M15 25 L20 10 L80 10 L85 25" fill="rgba(255,255,255,0.1)"/>
+            </svg>
+          </div>
+          <div class="back-btn"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg></div>
+          <div class="fav-btn"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg></div>
+        </div>
+        <div class="detail-body">
+          <div class="detail-name">مغسلة النخبة</div>
+          <div class="detail-meta">
+            <div class="detail-meta-item rating">★ 4.8 <span style="color:#9CA3AF;font-weight:400;">(142 تقييم)</span></div>
+            <div class="detail-meta-item">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg>
+              حي العليا، الرياض
+            </div>
+            <div class="detail-meta-item">📍 1.2 كم</div>
+          </div>
+          <div class="services-row">
+            <div class="service-chip">💧 غسيل خارجي</div>
+            <div class="service-chip">✨ تلميع</div>
+            <div class="service-chip">🌀 بخار</div>
+            <div class="service-chip">🔬 نانو</div>
+          </div>
+
+          <!-- Queue status -->
+          <div class="queue-status-card">
+            <div class="qsc-title">حالة الطابور الحالي</div>
+            <div class="qsc-stats">
+              <div class="qsc-stat">
+                <div class="qsc-stat-num" style="color:var(--green);">3</div>
+                <div class="qsc-stat-label">سيارات أمامك</div>
+              </div>
+              <div class="qsc-stat">
+                <div class="qsc-stat-num">12</div>
+                <div class="qsc-stat-label">دقيقة تقريباً</div>
+              </div>
+            </div>
+            <div class="crowd-level">
+              <div class="crowd-label">مستوى الازدحام:</div>
+              <div class="crowd-pills">
+                <div class="crowd-pill active low">خفيف</div>
+                <div class="crowd-pill">متوسط</div>
+                <div class="crowd-pill">مزدحم</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Book button -->
+          <button class="book-btn">
+            <svg viewBox="0 0 24 24" fill="white" width="20" height="20"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/></svg>
+            احجز دورك الآن
+          </button>
+
+          <!-- Loyalty -->
+          <div class="loyalty-card">
+            <div class="loyalty-top">
+              <div>
+                <div class="loyalty-label">نقاط الولاء</div>
+                <div class="loyalty-points">120 نقطة 🏆</div>
+              </div>
+              <div style="text-align:left;">
+                <div class="loyalty-label">الهدف</div>
+                <div style="font-size:18px;font-weight:700;">200 نقطة</div>
+              </div>
+            </div>
+            <div class="loyalty-progress">
+              <div class="loyalty-fill"></div>
+            </div>
+            <div class="loyalty-hint">🎁 بقي 80 نقطة للحصول على غسيل مجاني!</div>
+          </div>
+        </div>
+      </div>
+      <div class="bottom-nav">
+        <div class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          استكشاف
+        </div>
+        <div class="nav-item active">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          الطابور
+          <div class="nav-dot"></div>
+        </div>
+        <div class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          النقاط
+        </div>
+        <div class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          حسابي
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== SCREEN 6: SEARCH & FILTER ====== -->
+  <div class="screen-wrapper">
+    <div class="screen-label">6 · Search & Filter</div>
+    <div class="phone">
+      <div class="status-bar"><span>9:41</span><div class="status-icons"><svg viewBox="0 0 24 24" fill="currentColor" style="width:16px;height:16px;"><path d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4z"/></svg></div></div>
+      <div class="screen-content">
+        <div class="search-screen-header">
+          <div class="search-bar-wrap">
+            <div class="search-input-full">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input placeholder="ابحث عن مغسلة، حي، أو شارع...">
+            </div>
+            <div class="filter-icon-btn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="filter-section">
+          <div class="filter-section-label">الترتيب حسب</div>
+          <div class="filter-chips-wrap">
+            <div class="filter-chip active">📍 الأقرب</div>
+            <div class="filter-chip">⏱ الأقل انتظاراً</div>
+            <div class="filter-chip">⭐ الأعلى تقييماً</div>
+          </div>
+        </div>
+
+        <div class="filter-section">
+          <div class="filter-section-label">الخدمات</div>
+          <div class="filter-chips-wrap">
+            <div class="filter-chip active">💧 غسيل بخار</div>
+            <div class="filter-chip">✨ تلميع ساطع</div>
+            <div class="filter-chip">🔬 غسيل نانو</div>
+          </div>
+        </div>
+
+        <div class="filter-section">
+          <div class="filter-section-label">الحالة</div>
+          <div class="filter-chips-wrap">
+            <div class="filter-chip active">🟢 مفتوح الآن</div>
+          </div>
+        </div>
+
+        <div class="results-section">
+          <div class="results-header">
+            <span class="section-title">النتائج <span style="font-size:13px;font-weight:500;color:var(--text-muted);">(5 مغاسل)</span></span>
+            <span class="clear-all">مسح الكل</span>
+          </div>
+          <div class="result-card">
+            <div class="result-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg></div>
+            <div class="result-info">
+              <div class="result-name">مغسلة النخبة</div>
+              <div class="result-sub">
+                <span>📍 1.2 كم</span>
+                <span class="result-wait">⏱ 8 دقائق</span>
+              </div>
+            </div>
+            <div class="queue-badge green" style="padding:4px 10px;"><div class="queue-dot"></div>2</div>
+          </div>
+          <div class="result-card">
+            <div class="result-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg></div>
+            <div class="result-info">
+              <div class="result-name">مغسلة الفارس</div>
+              <div class="result-sub">
+                <span>📍 2.7 كم</span>
+                <span class="result-wait" style="color:var(--orange);">⏱ 18 دقيقة</span>
+              </div>
+            </div>
+            <div class="queue-badge orange" style="padding:4px 10px;"><div class="queue-dot"></div>4</div>
+          </div>
+          <div class="result-card">
+            <div class="result-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg></div>
+            <div class="result-info">
+              <div class="result-name">مغسلة الأمين</div>
+              <div class="result-sub">
+                <span>📍 3.1 كم</span>
+                <span class="result-wait">⏱ 12 دقيقة</span>
+              </div>
+            </div>
+            <div class="queue-badge green" style="padding:4px 10px;"><div class="queue-dot"></div>1</div>
+          </div>
+          <div class="result-card">
+            <div class="result-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg></div>
+            <div class="result-info">
+              <div class="result-name">مغسلة السرعة</div>
+              <div class="result-sub">
+                <span>📍 4.0 كم</span>
+                <span class="result-wait" style="color:var(--red);">⏱ 35 دقيقة</span>
+              </div>
+            </div>
+            <div class="queue-badge red" style="padding:4px 10px;"><div class="queue-dot"></div>8</div>
+          </div>
+          <div class="result-card">
+            <div class="result-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg></div>
+            <div class="result-info">
+              <div class="result-name">مغسلة النجوم</div>
+              <div class="result-sub">
+                <span>📍 4.5 كم</span>
+                <span class="result-wait">⏱ 5 دقائق</span>
+              </div>
+            </div>
+            <div class="queue-badge green" style="padding:4px 10px;"><div class="queue-dot"></div>0</div>
+          </div>
+        </div>
+      </div>
+      <div class="bottom-nav">
+        <div class="nav-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>استكشاف<div class="nav-dot"></div></div>
+        <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>الطابور</div>
+        <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>النقاط</div>
+        <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>حسابي</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== SCREEN 7: ACTIVE TICKET ====== -->
+  <div class="screen-wrapper">
+    <div class="screen-label">7 · Active Ticket</div>
+    <div class="phone">
+      <div class="status-bar"><span>9:41</span><div class="status-icons"><svg viewBox="0 0 24 24" fill="currentColor" style="width:16px;height:16px;"><path d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4z"/></svg></div></div>
+      <div class="screen-content">
+        <div style="background: linear-gradient(160deg,#00C853,#00897B); padding:20px 20px 50px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+            <div class="back-btn" style="position:static;width:36px;height:36px;background:rgba(255,255,255,0.2);">
+              <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+            </div>
+            <div style="text-align:center;">
+              <div style="font-size:11px;color:rgba(255,255,255,0.7);font-weight:600;">مغسلة النخبة</div>
+              <div style="font-size:17px;font-weight:800;color:white;">تذكرتك الحالية</div>
+            </div>
+            <div style="width:36px;"></div>
+          </div>
+        </div>
+        <div style="padding:0 20px; margin-top:-30px;">
+          <div class="ticket-card">
+            <div class="ticket-top">
+              <!-- Number -->
+              <div class="ticket-number-wrap">
+                <div class="ticket-num-label">رقم دورك</div>
+                <div class="ticket-number">#14</div>
+                <div style="display:flex;justify-content:center;margin:8px 0;">
+                  <div class="ticket-status">
+                    <div class="pulse-dot"></div>
+                    في الانتظار
+                  </div>
+                </div>
+              </div>
+              <!-- Countdown -->
+              <div class="countdown">
+                <div class="countdown-label">⏱ الوقت المتبقي التقريبي</div>
+                <div class="countdown-time">12:30</div>
+              </div>
+            </div>
+            <div class="ticket-notch">
+              <div class="ticket-notch-left"></div>
+              <div class="ticket-notch-line"></div>
+              <div class="ticket-notch-right"></div>
+            </div>
+            <!-- QR -->
+            <div class="qr-section">
+              <div class="qr-label">اعرض هذا الكود للعامل عند وصولك</div>
+              <div class="qr-code" id="qr">
+                <!-- Generated QR pattern -->
+              </div>
+              <div class="ticket-id">MSR-2026-0214-A14</div>
+            </div>
+          </div>
+        </div>
+        <div class="ticket-actions">
+          <button class="btn-map">
+            <svg viewBox="0 0 24 24" fill="white" width="18" height="18"><path d="M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5c0 .28.22.5.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5c0-.28-.22-.5-.5-.5zM15 19l-6-2.11V5l6 2.11V19z"/></svg>
+            فتح الموقع في الخريطة
+          </button>
+          <div class="btn-cancel">إلغاء الحجز</div>
+        </div>
+      </div>
+      <div class="bottom-nav">
+        <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>استكشاف</div>
+        <div class="nav-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>الطابور<div class="nav-dot"></div></div>
+        <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>النقاط</div>
+        <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>حسابي</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== SCREEN 8: NOTIFICATIONS ====== -->
+  <div class="screen-wrapper">
+    <div class="screen-label">8 · Notifications</div>
+    <div class="phone">
+      <div class="status-bar"><span>9:41</span><div class="status-icons"><svg viewBox="0 0 24 24" fill="currentColor" style="width:16px;height:16px;"><path d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4z"/></svg></div></div>
+      <div class="screen-content">
+        <div class="notif-header">
+          <h2>التنبيهات</h2>
+          <p>ابق على اطلاع بكل جديد</p>
+        </div>
+
+        <div class="notif-group">
+          <div class="notif-group-label">اليوم</div>
+          <div class="notif-item unread">
+            <div class="notif-icon green">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+            </div>
+            <div class="notif-content">
+              <div class="notif-title">استعد! بقي سيارتان فقط أمامك. يرجى التوجه لمغسلة النخبة.</div>
+              <div class="notif-time">منذ 5 دقائق</div>
+            </div>
+          </div>
+          <div class="notif-item unread">
+            <div class="notif-icon blue">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#1E88E5" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            </div>
+            <div class="notif-content">
+              <div class="notif-title">عرض خاص! احصل على غسيل مجاني بعد 5 زيارات هذا الشهر. 🎁</div>
+              <div class="notif-time">منذ ساعة</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="notif-group">
+          <div class="notif-group-label">أمس</div>
+          <div class="notif-item">
+            <div class="notif-icon green-light">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#00C853" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <div class="notif-content">
+              <div class="notif-title">تم إضافة 15 نقطة لرصيدك بنجاح. رصيدك الآن: 120 نقطة.</div>
+              <div class="notif-time">أمس، 3:22 م</div>
+            </div>
+          </div>
+          <div class="notif-item">
+            <div class="notif-icon green">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+            </div>
+            <div class="notif-content">
+              <div class="notif-title">اكتمل حجزك في مغسلة الفارس بنجاح. شكراً لاستخدام مسار!</div>
+              <div class="notif-time">أمس، 11:10 ص</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="notif-group">
+          <div class="notif-group-label">سابقاً</div>
+          <div class="notif-item">
+            <div class="notif-icon blue">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#1E88E5" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            </div>
+            <div class="notif-content">
+              <div class="notif-title">مرحباً بك في مسار! ابدأ رحلتك واحجز دورك بدون انتظار. 🚗</div>
+              <div class="notif-time">الاثنين، 10:00 ص</div>
+            </div>
+          </div>
+        </div>
+        <div style="height:16px;"></div>
+      </div>
+      <div class="bottom-nav">
+        <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>استكشاف</div>
+        <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>الطابور</div>
+        <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>النقاط</div>
+        <div class="nav-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>حسابي<div class="nav-dot"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== SCREEN 9: HISTORY ====== -->
+  <div class="screen-wrapper">
+    <div class="screen-label">9 · History</div>
+    <div class="phone">
+      <div class="status-bar"><span>9:41</span><div class="status-icons"><svg viewBox="0 0 24 24" fill="currentColor" style="width:16px;height:16px;"><path d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4z"/></svg></div></div>
+      <div class="screen-content">
+        <div class="history-header">
+          <h2>سجل الحجوزات</h2>
+          <p>جميع طلباتك السابقة</p>
+        </div>
+        <div class="history-tabs">
+          <div class="history-tab active">الكل</div>
+          <div class="history-tab">مكتمل</div>
+          <div class="history-tab">ملغى</div>
+        </div>
+        <div class="history-cards">
+          <!-- Card 1 -->
+          <div class="history-card">
+            <div class="hc-top">
+              <div class="hc-left">
+                <div class="hc-name">مغسلة النخبة</div>
+                <div class="hc-date"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>25 فبراير 2026 - 10:30 ص</div>
+              </div>
+              <div class="hc-status done">مكتمل</div>
+            </div>
+            <div class="hc-bottom">
+              <div class="hc-service">🚗 غسيل خارجي + تلميع</div>
+              <div class="hc-points">+20 نقطة</div>
+            </div>
+          </div>
+          <!-- Card 2 -->
+          <div class="history-card">
+            <div class="hc-top">
+              <div class="hc-left">
+                <div class="hc-name">مغسلة الفارس</div>
+                <div class="hc-date"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>22 فبراير 2026 - 2:15 م</div>
+              </div>
+              <div class="hc-status done">مكتمل</div>
+            </div>
+            <div class="hc-bottom">
+              <div class="hc-service">🚗 غسيل بخار شامل</div>
+              <div class="hc-points">+15 نقطة</div>
+            </div>
+          </div>
+          <!-- Card 3 cancelled -->
+          <div class="history-card">
+            <div class="hc-top">
+              <div class="hc-left">
+                <div class="hc-name">مغسلة الأمير</div>
+                <div class="hc-date"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>18 فبراير 2026 - 9:00 ص</div>
+              </div>
+              <div class="hc-status cancelled">ملغى</div>
+            </div>
+            <div class="hc-bottom">
+              <div class="hc-service">🏍 غسيل دباب</div>
+              <div class="hc-points" style="background:#FFEBEE;color:var(--red);">ملغى</div>
+            </div>
+          </div>
+          <!-- Card 4 -->
+          <div class="history-card">
+            <div class="hc-top">
+              <div class="hc-left">
+                <div class="hc-name">مغسلة النجوم</div>
+                <div class="hc-date"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>14 فبراير 2026 - 4:45 م</div>
+              </div>
+              <div class="hc-status done">مكتمل</div>
+            </div>
+            <div class="hc-bottom">
+              <div class="hc-service">🚗 تلميع ساطع + نانو</div>
+              <div class="hc-points">+25 نقطة</div>
+            </div>
+          </div>
+          <!-- Card 5 -->
+          <div class="history-card">
+            <div class="hc-top">
+              <div class="hc-left">
+                <div class="hc-name">مغسلة الأمين</div>
+                <div class="hc-date"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>8 فبراير 2026 - 11:20 ص</div>
+              </div>
+              <div class="hc-status done">مكتمل</div>
+            </div>
+            <div class="hc-bottom">
+              <div class="hc-service">🚐 فان - غسيل خارجي</div>
+              <div class="hc-points">+30 نقطة</div>
+            </div>
+          </div>
+        </div>
+        <div style="height:16px;"></div>
+      </div>
+      <div class="bottom-nav">
+        <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>استكشاف</div>
+        <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>الطابور</div>
+        <div class="nav-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>النقاط<div class="nav-dot"></div></div>
+        <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>حسابي</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== SCREEN 10: PROFILE ====== -->
+  <div class="screen-wrapper">
+    <div class="screen-label">10 · Profile</div>
+    <div class="phone">
+      <div class="status-bar" style="position:absolute;top:0;right:0;left:0;z-index:10;">
+        <span style="color:white">9:41</span>
+        <div class="status-icons" style="filter:brightness(10)"><svg viewBox="0 0 24 24" fill="currentColor" style="width:16px;height:16px;"><path d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4z"/></svg></div>
+      </div>
+      <div class="screen-content">
+        <div class="profile-top">
+          <div style="height:40px;"></div>
+          <div class="profile-avatar">👩</div>
+          <div class="profile-name">سارة أحمد</div>
+          <div class="profile-car">
+            <svg viewBox="0 0 24 24" fill="rgba(255,255,255,0.8)" width="14" height="14"><path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/></svg>
+            تويوتا كامري - أبيض
+          </div>
+        </div>
+
+        <div class="profile-stats">
+          <div class="stat-card">
+            <div class="stat-icon">🏆</div>
+            <div class="stat-num" style="color:var(--blue);">120</div>
+            <div class="stat-label">نقاطي</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">⏱</div>
+            <div class="stat-num">15</div>
+            <div class="stat-label">ساعات موفرة</div>
+          </div>
+        </div>
+
+        <!-- Loyalty progress -->
+        <div style="margin:0 20px 20px; background:white; border-radius:var(--radius); padding:16px; box-shadow:var(--shadow-sm);">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <span style="font-size:13px;font-weight:700;color:var(--text);">التقدم نحو مكافأتك 🎁</span>
+            <span style="font-size:13px;font-weight:700;color:var(--green);">120 / 200</span>
+          </div>
+          <div style="background:var(--bg);border-radius:8px;height:10px;overflow:hidden;">
+            <div style="background:linear-gradient(90deg,var(--green),#00E676);height:100%;width:60%;border-radius:8px;"></div>
+          </div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:6px;">بقي 80 نقطة للحصول على غسيل مجاني!</div>
+        </div>
+
+        <div class="profile-section">
+          <div class="profile-section-title">إعدادات الحساب</div>
+          <div class="profile-item">
+            <div class="profile-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99z"/></svg></div>
+            <span class="profile-item-label">إدارة مركباتي</span>
+            <div class="profile-item-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></div>
+          </div>
+          <div class="profile-item">
+            <div class="profile-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div>
+            <span class="profile-item-label">طرق الدفع</span>
+            <div class="profile-item-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></div>
+          </div>
+          <div class="profile-item">
+            <div class="profile-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg></div>
+            <span class="profile-item-label">الإعدادات</span>
+            <div class="profile-item-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></div>
+          </div>
+          <div class="profile-item">
+            <div class="profile-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>
+            <span class="profile-item-label">الدعم الفني</span>
+            <div class="profile-item-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></div>
+          </div>
+        </div>
+
+        <button class="logout-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          تسجيل الخروج
+        </button>
+      </div>
+      <div class="bottom-nav">
+        <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>استكشاف</div>
+        <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>الطابور</div>
+        <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>النقاط</div>
+        <div class="nav-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>حسابي<div class="nav-dot"></div></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// Generate QR code pattern
+const qr = document.getElementById('qr');
+const pattern = [
+  1,1,1,1,1,1,1,
+  1,0,0,0,0,0,1,
+  1,0,1,0,1,0,1,
+  1,0,0,1,0,0,1,
+  1,0,1,0,1,0,1,
+  1,0,0,0,0,0,1,
+  1,1,1,1,1,1,1,
+];
+if(qr) {
+  pattern.forEach(b => {
+    const cell = document.createElement('div');
+    cell.className = 'qr-cell ' + (b ? 'q1' : 'q0');
+    qr.appendChild(cell);
+  });
+}
+</script>
+</body>
+</html>
